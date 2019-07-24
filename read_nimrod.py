@@ -21,14 +21,22 @@ import struct
 import numpy as np
 import nimrod_data_defs as ndd
 
-input_file = sys.argv[1]
-
+# Get the input file from the command line
+if (len(sys.argv < 2):
+    print("Error: You must enter the input filename on the command line")
+    quit()
+else:
+    input_file = sys.argv[1]
+    
 print("Input file is", input_file)
 
+#Open the file for reading and check the initial header size
 file_id = open(input_file, "rb")
 record_length, = struct.unpack(">l", file_id.read(4))
 if (record_length != 512):
     raise RuntimeError("Incorrect record length", record_length)
+
+# Read the four main headers from the file
 print(" -   Reading header")
 int_hdr_bytes = np.fromfile(file_id, dtype=ndd.main_int_header_fmt, count=1)
 real_hdr_bytes = np.fromfile(file_id, dtype=ndd.main_real_header_fmt, count=1)
@@ -38,6 +46,7 @@ record_length, = struct.unpack(">l", file_id.read(4))
 if (record_length != 512):
     raise RuntimeError("Incorrect record length", record_length)
 
+# Convert the four headers into one large header dictionary
 header = {
     "Int_Header": ndd.recarray2dict(int_hdr_bytes),
     "Real_Header": ndd.recarray2dict(real_hdr_bytes),
@@ -46,18 +55,24 @@ header = {
     }
 print(" -   Header successfully read")
 
+# Compute size of the actual data array using header info
 data_array_size = (header["Int_Header"]['NumRows'][0].astype(np.int32) *
                    header["Int_Header"]['NumCols'][0].astype(np.int32))
 
+# Check the data record size is consistent with the array size
 record_length, = struct.unpack(">l", file_id.read(4))
 if (record_length != data_array_size * 2):
     raise RuntimeError("Incorrect record length. Got", record_length,
                        "expected", data_array_size * 2)
 
+# Create the data array format, then read data from file
 data_fmt = ndd.create_data_array_dtype(header["Int_Header"]['NumRows'][0],
                                        header["Int_Header"]['NumCols'][0])
 data_array = np.fromfile(file_id, dtype=data_fmt, count=1)
-data_array = np.squeeze(data_array['Data']) / 32.
-file_id.close()
 
+# Radar data stores values multiplied by 32.
+data_array = np.squeeze(data_array['Data']) / 32.
+
+# Done reading data
+file_id.close()
 print(" -   Data successfully read")
