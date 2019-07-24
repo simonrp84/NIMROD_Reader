@@ -35,7 +35,7 @@ import numpy as np
 import nimrod_data_defs as ndd
 
 # Get the input file from the command line
-if (len(sys.argv < 2):
+if (len(sys.argv) < 2):
     print("Error: You must enter the input filename on the command line")
     quit()
 else:
