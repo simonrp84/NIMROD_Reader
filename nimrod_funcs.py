@@ -18,6 +18,7 @@
 # this.  If not, see <http://www.gnu.org/licenses/>.
 
 import numpy as np
+import gdal
 
 def recarray2dict(arr):
     ''' Converts a numpy array with descriptions
