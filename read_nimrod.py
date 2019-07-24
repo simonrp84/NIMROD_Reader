@@ -33,6 +33,7 @@ import sys
 import struct
 import numpy as np
 import nimrod_data_defs as ndd
+import nimrod_funcs as nfc
 
 def read_nimrod_data(input_file):
     print("Input file is", input_file)
@@ -55,10 +56,10 @@ def read_nimrod_data(input_file):
 
     # Convert the four headers into one large header dictionary
     nimrod_output = {
-        "I_Hdr": ndd.recarray2dict(int_hdr_bytes),
-        "R_Hdr": ndd.recarray2dict(real_hdr_bytes),
-        "C_Hdr": ndd.recarray2dict(char_hdr_bytes),
-        "D_Hdr": ndd.recarray2dict(data_hdr_bytes)
+        "I_Hdr": nfc.recarray2dict(int_hdr_bytes),
+        "R_Hdr": nfc.recarray2dict(real_hdr_bytes),
+        "C_Hdr": nfc.recarray2dict(char_hdr_bytes),
+        "D_Hdr": nfc.recarray2dict(data_hdr_bytes)
         }
     print(" -   Header successfully read")
 
@@ -73,7 +74,7 @@ def read_nimrod_data(input_file):
                            "expected", data_array_size * 2)
 
     # Create the data array format, then read data from file
-    data_fmt = ndd.create_data_dtype(nimrod_output["I_Hdr"]['NumRows'][0],
+    data_fmt = nfc.create_data_dtype(nimrod_output["I_Hdr"]['NumRows'][0],
                                      nimrod_output["I_Hdr"]['NumCols'][0])
     data_array = np.fromfile(file_id, dtype=data_fmt, count=1)
 

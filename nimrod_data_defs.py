@@ -1,7 +1,9 @@
 #!/usr/bin/python
-# Stores some useful functions and the 
-# definitions for each type of header data in the
-# NIMROD file format.
+# Stores the definitions for each type of header data in the NIMROD format
+# Copyright 2019, Simon R Proud, University of Oxford,
+# Contact: simon.proud@physics.ox.ac.uk
+#
+#
 # LICENSE:
 # This is free software: you can redistribute it and/or modify it under the
 # terms of the GNU General Public License as published by the Free Software
@@ -17,37 +19,6 @@
 
 import numpy as np
 
-
-def recarray2dict(arr):
-    ''' Converts a numpy array with descriptions
-    into a python dict, where the descriptions match
-    the key names.
-    This function is taken from the Satpy library:
-    https://github.com/pytroll/satpy
-    '''    
-    res = {}
-    for dtuple in arr.dtype.descr:
-        key = dtuple[0]
-        ntype = dtuple[1]
-        data = arr[key]
-        if isinstance(ntype, list):
-            res[key] = recarray2dict(data)
-        else:
-            res[key] = data
-
-    return res
-
-
-def create_data_array_dtype(xs, ys):
-    ''' This function creates the numpy format descriptor
-    for the NIMROD main data array, based on the x and y sizes
-    given in the header info
-    '''    
-    data_array_fmt = np.dtype([
-        ("Data", '>i2', (xs, ys,))
-    ])
-
-    return data_array_fmt
 
 # This is the first header, which stores only int16
 main_int_header_fmt = np.dtype([
