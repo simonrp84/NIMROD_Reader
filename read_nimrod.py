@@ -54,17 +54,17 @@ def read_nimrod_data(input_file):
         raise RuntimeError("Incorrect record length", record_length)
 
     # Convert the four headers into one large header dictionary
-    header = {
-        "Int_Header": ndd.recarray2dict(int_hdr_bytes),
-        "Real_Header": ndd.recarray2dict(real_hdr_bytes),
-        "Char_Header": ndd.recarray2dict(char_hdr_bytes),
-        "Data_Header": ndd.recarray2dict(data_hdr_bytes)
+    nimrod_output = {
+        "I_Hdr": ndd.recarray2dict(int_hdr_bytes),
+        "R_Hdr": ndd.recarray2dict(real_hdr_bytes),
+        "C_Hdr": ndd.recarray2dict(char_hdr_bytes),
+        "D_Hdr": ndd.recarray2dict(data_hdr_bytes)
         }
     print(" -   Header successfully read")
 
     # Compute size of the actual data array using header info
-    data_array_size = (header["Int_Header"]['NumRows'][0].astype(np.int32) *
-                       header["Int_Header"]['NumCols'][0].astype(np.int32))
+    data_array_size = (nimrod_output["I_Hdr"]['NumRows'][0].astype(np.int32) *
+                       nimrod_output["I_Hdr"]['NumCols'][0].astype(np.int32))
 
     # Check the data record size is consistent with the array size
     record_length, = struct.unpack(">l", file_id.read(4))
@@ -73,24 +73,32 @@ def read_nimrod_data(input_file):
                            "expected", data_array_size * 2)
 
     # Create the data array format, then read data from file
-    data_fmt = ndd.create_data_array_dtype(header["Int_Header"]['NumRows'][0],
-                                           header["Int_Header"]['NumCols'][0])
+    data_fmt = ndd.create_data_dtype(nimrod_output["I_Hdr"]['NumRows'][0],
+                                     nimrod_output["I_Hdr"]['NumCols'][0])
     data_array = np.fromfile(file_id, dtype=data_fmt, count=1)
 
     # Radar data stores values multiplied by 32.
-    data_array = np.squeeze(data_array['Data']) / 32.
+    nimrod_output['Data'] = np.squeeze(data_array['Data']) / 32.
 
     # Done reading data
     file_id.close()
     print(" -   Data successfully read")
     
+    return nimrod_output
+    
 
-# Get the input file from the command line
-if (len(sys.argv) < 2):
-    print("Error: You must enter the input filename on the command line")
-    quit()
-else:
-    input_file = sys.argv[1]
+if __name__ == '__main__':
+    # Get the input file from the command line
+    if (len(sys.argv) < 2):
+        print("Error: You must enter the input filename on the command line")
+        quit()
+    else:
+        input_file = sys.argv[1]
 
-# Call the main function
-read_nimrod_data(input_file)
+    # Call the main function
+    nimrod = read_nimrod_data(input_file)
+
+    print(nimrod['R_Hdr']['Northing_Coord_Of_Start_Line'])
+    print(nimrod['R_Hdr']['Easting_Coord_Of_Start_Line'])
+    print(nimrod['R_Hdr']['Pixel_Size_In_Coords_X_Direction'])
+    print(nimrod['R_Hdr']['Pixel_Size_In_Coords_Y_Direction'])
