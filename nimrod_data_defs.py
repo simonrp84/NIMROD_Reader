@@ -1,7 +1,17 @@
+# Stores some useful functions and the 
+# definitions for each type of header data in the
+# NIMROD file format.
+
 import numpy as np
 
 
 def recarray2dict(arr):
+    ''' Converts a numpy array with descriptions
+    into a python dict, where the descriptions match
+    the key names.
+    This function is taken from the Satpy library:
+    https://github.com/pytroll/satpy
+    '''    
     res = {}
     for dtuple in arr.dtype.descr:
         key = dtuple[0]
@@ -16,13 +26,17 @@ def recarray2dict(arr):
 
 
 def create_data_array_dtype(xs, ys):
+    ''' This function creates the numpy format descriptor
+    for the NIMROD main data array, based on the x and y sizes
+    given in the header info
+    '''    
     data_array_fmt = np.dtype([
         ("Data", '>i2', (xs, ys,))
     ])
 
     return data_array_fmt
 
-
+# This is the first header, which stores only int16
 main_int_header_fmt = np.dtype([
     ("VTyear", '>i2'),  # 1
     ("VTmonth", '>i2'),  # 2
@@ -57,6 +71,7 @@ main_int_header_fmt = np.dtype([
     ("TimeAveraging", '>i2')  # 31
 ])
 
+# Second header, for float32
 main_real_header_fmt = np.dtype([
     ("Vert_Coord_Val", '>f4'),  # 32
     ("Vert_Coord_Ref", '>f4'),  # 33
@@ -96,12 +111,14 @@ main_real_header_fmt = np.dtype([
     ("Spare", '>f4', (28,))  # 77-104
 ])
 
+# Character header
 main_char_header_fmt = np.dtype([
     ('Field_Units', 'S8'),  # 105
     ('Data_Source', 'S24'),  # 106
     ('Field_Title', 'S24')  # 107
 ])
 
+# Data specific header, note that only radar is supported here
 data_header_fmt = np.dtype([
     ('Single_Site_Radar_Number', '>i2'),  # 108
     ('Composite_Radars_Used_1', '>i2'),  # 109
