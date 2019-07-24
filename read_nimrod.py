@@ -28,17 +28,17 @@
 # You should have received a copy of the GNU General Public License along with
 # this.  If not, see <http://www.gnu.org/licenses/>.
 
-
 import sys
 import struct
 import numpy as np
 import nimrod_data_defs as ndd
 import nimrod_funcs as nfc
 
+
 def read_nimrod_data(input_file):
     print("Input file is", input_file)
 
-    #Open the file for reading and check the initial header size
+    # Open the file for reading and check the initial header size
     file_id = open(input_file, "rb")
     record_length, = struct.unpack(">l", file_id.read(4))
     if (record_length != 512):
@@ -46,10 +46,18 @@ def read_nimrod_data(input_file):
 
     # Read the four main headers from the file
     print(" -   Reading header")
-    int_hdr_bytes = np.fromfile(file_id, dtype=ndd.main_int_header_fmt, count=1)
-    real_hdr_bytes = np.fromfile(file_id, dtype=ndd.main_real_header_fmt, count=1)
-    char_hdr_bytes = np.fromfile(file_id, dtype=ndd.main_char_header_fmt, count=1)
-    data_hdr_bytes = np.fromfile(file_id, dtype=ndd.data_header_fmt, count=1)
+    int_hdr_bytes = np.fromfile(file_id,
+                                dtype=ndd.main_int_header_fmt,
+                                count=1)
+    real_hdr_bytes = np.fromfile(file_id,
+                                 dtype=ndd.main_real_header_fmt,
+                                 count=1)
+    char_hdr_bytes = np.fromfile(file_id,
+                                 dtype=ndd.main_char_header_fmt,
+                                 count=1)
+    data_hdr_bytes = np.fromfile(file_id,
+                                 dtype=ndd.data_header_fmt,
+                                 count=1)
     record_length, = struct.unpack(">l", file_id.read(4))
     if (record_length != 512):
         raise RuntimeError("Incorrect record length", record_length)
@@ -84,22 +92,19 @@ def read_nimrod_data(input_file):
     # Done reading data
     file_id.close()
     print(" -   Data successfully read")
-    
+
     return nimrod_output
-    
+
 
 if __name__ == '__main__':
     # Get the input file from the command line
-    if (len(sys.argv) < 2):
-        print("Error: You must enter the input filename on the command line")
+    if (len(sys.argv) < 3):
+        print("Error: You must enter the in and out filenames.")
         quit()
     else:
         input_file = sys.argv[1]
+        output_file = sys.argv[2]
 
     # Call the main function
     nimrod = read_nimrod_data(input_file)
-
-    print(nimrod['R_Hdr']['Northing_Coord_Of_Start_Line'])
-    print(nimrod['R_Hdr']['Easting_Coord_Of_Start_Line'])
-    print(nimrod['R_Hdr']['Pixel_Size_In_Coords_X_Direction'])
-    print(nimrod['R_Hdr']['Pixel_Size_In_Coords_Y_Direction'])
+    nfc.create_gdal_output(nimrod, output_file)
